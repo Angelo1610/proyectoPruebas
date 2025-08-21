@@ -1,8 +1,12 @@
+# ========================
 # Node modules
+# ========================
 node_modules/
 **/node_modules/
 
+# ========================
 # Logs
+# ========================
 logs
 *.log
 npm-debug.log*
@@ -10,41 +14,59 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# ========================
 # Environment variables
+# ========================
 .env
 **/.env
 
+# ========================
 # Coverage reports
+# ========================
 coverage/
 **/coverage/
 
+# ========================
 # k6 performance results
+# ========================
 performance/
-**/performance/
+backend/tests/k6/results/
 
-# Firebase hosting build/output
+# ========================
+# Firebase Hosting build/output
+# ========================
 frontend/build/
 frontend/.firebase/
 firebase-debug.log
 
-# MacOS files
-.DS_Store
-
-# VSCode settings
-.vscode/
-.vscode/*
-
-# npm
-package-lock.json
-yarn.lock
-.pnpm-lock.yaml
-
+# ========================
 # Temporary files
+# ========================
 tmp/
 temp/
 *.tmp
 
-# Misc
+# ========================
+# MacOS system files
+# ========================
+.DS_Store
+
+# ========================
+# IDEs / Editors
+# ========================
+.vscode/
+.vscode/*
+.idea/
+
+# ========================
+# npm / package managers
+# ========================
+package-lock.json
+yarn.lock
+.pnpm-lock.yaml
+
+# ========================
+# Miscellaneous
+# ========================
 *.swp
 *.swo
-.idea/

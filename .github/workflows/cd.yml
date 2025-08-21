@@ -6,9 +6,8 @@ on:
 
 jobs:
   deploy:
-    # Solo se ejecuta si CI y performance tests pasaron
-    needs: [build-and-test, performance-tests]
     runs-on: ubuntu-latest
+    needs: [build-and-test, performance-tests]
 
     steps:
       - name: Checkout repository
@@ -22,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # ----------- Ejemplo: Deploy a Firebase Hosting -----------
+      # Deploy a Firebase Hosting
       - name: Setup Firebase CLI
         run: npm install -g firebase-tools
 
@@ -33,21 +32,5 @@ jobs:
           echo "Desplegando a Firebase Hosting..."
           firebase deploy --only hosting --project your-firebase-project-id
 
-      # ----------- Ejemplo: Deploy a Vercel -----------
-      # - name: Deploy to Vercel
-      #   env:
-      #     VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      #   run: |
-      #     npx vercel --prod --token $VERCEL_TOKEN
-
-      # ----------- Ejemplo: Deploy a Netlify -----------
-      # - name: Deploy to Netlify
-      #   env:
-      #     NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-      #     NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-      #   run: |
-      #     npx netlify deploy --prod --dir=dist --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
-
       - name: Show deployed URL
-        run: |
-          echo "✅ Deploy completado. URL disponible en Firebase/Vercel/Netlify."
+        run: echo "✅ Deploy completado. URL disponible en Firebase."

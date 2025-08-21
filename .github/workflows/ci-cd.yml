@@ -35,12 +35,11 @@ jobs:
         run: npx jest --ci --coverage
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: coverage/lcov-report
 
-      # Fail job if coverage < 90%
       - name: Check coverage threshold
         run: |
           npx jest --ci --coverage --coverageThreshold='{"global": {"branches":90,"functions":90,"lines":90,"statements":90}}'
@@ -59,16 +58,16 @@ jobs:
         uses: grafana/setup-k6@v0.2.0
 
       - name: Run k6 ramp test
-        run: k6 run tests/k6/ramp.js --out json=performance/ramp-summary.json
+        run: k6 run backend/tests/k6/ramp.js --out json=performance/ramp-summary.json
 
       - name: Run k6 spike test
-        run: k6 run tests/k6/spike.js --out json=performance/spike-summary.json
+        run: k6 run backend/tests/k6/spike.js --out json=performance/spike-summary.json
 
       - name: Run k6 soak test
-        run: k6 run tests/k6/soak.js --out json=performance/soak-summary.json
+        run: k6 run backend/tests/k6/soak.js --out json=performance/soak-summary.json
 
       - name: Upload performance reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: performance-report
           path: performance/
@@ -91,13 +90,15 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # Ejemplo: deploy a Render (requiere RENDER_API_KEY en Secrets)
-      - name: Deploy backend to Render
-        run: |
-          curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
-            -H "Accept: application/json" \
-            https://api.render.com/deploy/srv-xxxxxxxxxxxx
+      # Deploy a Firebase Hosting
+      - name: Setup Firebase CLI
+        run: npm install -g firebase-tools
 
-      - name: Output deployment URL
-        run: echo "Backend deployed! Check your Render service URL."
+      - name: Deploy to Firebase Hosting
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          firebase deploy --only hosting --project your-firebase-project-id
+
+      - name: Show deployed URL
+        run: echo "✅ Deploy completado. URL disponible en Firebase."

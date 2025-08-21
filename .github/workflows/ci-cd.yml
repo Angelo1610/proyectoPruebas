@@ -32,6 +32,8 @@ jobs:
         run: npm install
 
       - name: Run unit tests with coverage
+        env:
+         MONGO_URI: ${{ secrets.MONGO_URI }}
         run: npx jest --ci --coverage
 
       - name: Upload coverage report

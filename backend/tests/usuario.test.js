@@ -1,4 +1,4 @@
-const controller = require('../controllers/usuarioController');
+const controller = require('../controllers/usuariocontroller');
 const Usuario = require('../models/Usuario');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');

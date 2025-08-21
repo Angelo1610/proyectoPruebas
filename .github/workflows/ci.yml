@@ -5,7 +5,6 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:   # Permite ejecutar el workflow manualmente
 
 jobs:
   build-and-test:
@@ -16,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: 20
 
@@ -34,7 +33,7 @@ jobs:
       - name: Run unit tests with coverage
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
-        run: npx jest --ci --coverage --coverageReporters=text --coverageReporters=lcov
+        run: npx jest --ci --coverage
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
@@ -44,14 +43,7 @@ jobs:
 
       - name: Check coverage threshold
         run: |
-          npx jest --ci --coverage \
-          --coverageThreshold='{"global": {"branches":90,"functions":90,"lines":90,"statements":90}}'
-
-      - name: Add coverage summary to GitHub Actions
-        run: |
-          echo "## 📊 Coverage Summary" >> $GITHUB_STEP_SUMMARY
-          npx jest --coverage --coverageReporters=text-summary \
-          | tee -a $GITHUB_STEP_SUMMARY
+          npx jest --ci --coverage --coverageThreshold='{"global": {"branches":90,"functions":90,"lines":90,"statements":90}}'
 
   performance-tests:
     runs-on: ubuntu-latest
@@ -66,13 +58,13 @@ jobs:
         uses: grafana/setup-k6@v0.2.0
 
       - name: Run k6 ramp test
-        run: k6 run backend/tests/k6/ramp.js --out json=performance/ramp-summary.json
+        run: k6 run backend/tests/k6/ramp.js --out json=performance/ramp.json
 
       - name: Run k6 spike test
-        run: k6 run backend/tests/k6/spike.js --out json=performance/spike-summary.json
+        run: k6 run backend/tests/k6/spike.js --out json=performance/spike.json
 
       - name: Run k6 soak test
-        run: k6 run backend/tests/k6/soak.js --out json=performance/soak-summary.json
+        run: k6 run backend/tests/k6/soak.js --out json=performance/soak.json
 
       - name: Upload performance reports
         uses: actions/upload-artifact@v4
@@ -82,7 +74,17 @@ jobs:
 
       - name: Add performance summary
         run: |
-          echo "## ⚡ Performance Tests" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Ramp test done" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Spike test done" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Soak test done" >> $GITHUB_STEP_SUMMARY
+          echo "## ⚡ Performance Tests Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Test | Avg Latency (ms) | Max Latency (ms) | Errors |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|-----------------|------------------|--------|" >> $GITHUB_STEP_SUMMARY
+
+          for file in performance/*.json; do
+            TEST_NAME=$(basename $file .json)
+
+            AVG_LATENCY=$(jq '[.[] | select(.type=="Point" and .metric=="http_req_duration") | .data.value] | add / length' $file)
+            MAX_LATENCY=$(jq '[.[] | select(.type=="Point" and .metric=="http_req_duration") | .data.value] | max' $file)
+            ERRORS=$(jq '[.[] | select(.type=="Point" and .metric=="http_req_failed") | .data.value] | add' $file)
+
+            echo "| ${TEST_NAME} | ${AVG_LATENCY} | ${MAX_LATENCY} | ${ERRORS} |" >> $GITHUB_STEP_SUMMARY
+          done
